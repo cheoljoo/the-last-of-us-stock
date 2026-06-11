@@ -334,7 +334,16 @@ def _build_html(results: dict[str, Any]) -> str:
 <footer class="container-fluid text-center">
   <p>
     라오어 무한매수법 V2.2 백테스트 시스템 |
-    기존 대시보드: <a href="http://psncs.iptime.org/stock_candle/index.html" target="_blank" style="color:#7c9fff">http://psncs.iptime.org/stock_candle/index.html</a>
+    기존 대시보드: <a href="http://psncs.iptime.org/stock_candle/index.html" target="_blank" style="color:#7c9fff">stock_candle</a>
+  </p>
+  <p>
+    <a href="https://github.com/cheoljoo/the-last-of-us-stock/blob/main/plan-opus.md" target="_blank" style="color:#7c9fff">
+      &#x1F4D6; 전략 설계 문서 (plan-opus.md)
+    </a>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://github.com/cheoljoo/the-last-of-us-stock" target="_blank" style="color:#7c9fff">
+      &#x1F4E6; 소스코드 (GitHub)
+    </a>
   </p>
   <p class="text-muted">생성: {gen_date} | 투자는 본인 책임입니다.</p>
 </footer>

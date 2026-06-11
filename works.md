@@ -111,6 +111,25 @@
 ### 22:36 — works.md 작성 (이 파일)
 - 전체 작업 이력을 시간순으로 정리하여 `works.md` 생성
 
+### 22:44 — 홈 인덱스 페이지 추가
+- `http://psncs.iptime.org/` 루트에서 nginx 기본 페이지가 뜨는 문제 해결
+- `/home/cheoljoo/code/home/index.html` 생성
+  - 다크 테마 (무한매수법 대시보드와 동일 색상 체계 `#0d0f1a` / `#1a1d2e`)
+  - Bootstrap 5 카드 그리드 레이아웃
+  - 3개 서비스 카드: 🕯️ Stock Candle / ∞ 무한매수법 / 📰 News Arcade
+  - 호버 시 카드 상승 애니메이션 + 파란 테두리 강조
+  - 인라인 SVG favicon ("P" 심볼)
+- nginx `candle.conf`에 `location /` 블록 추가 (`root` 방식)
+  - `location = /` (완전 일치)는 index 내부 리다이렉트와 충돌 → `location /` 사용
+  - 기존 `/stock_candle/`, `/infinite_buying/`, `/news/` prefix는 더 구체적이므로 우선 처리됨
+- 전체 4개 URL 200 응답 확인 ✅
+
+### 2026-06-12 — GitHub 링크 추가 (대시보드 footer)
+- `src/lastofus/reports/render.py` footer에 두 링크 추가
+  - 📖 [전략 설계 문서 (plan-opus.md)](https://github.com/cheoljoo/the-last-of-us-stock/blob/main/plan-opus.md)
+  - 📦 [소스코드 (GitHub)](https://github.com/cheoljoo/the-last-of-us-stock)
+- 대시보드 재생성 (5.0 MB)
+
 ---
 
 ## 작업 예정 (TODO)
