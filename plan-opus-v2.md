@@ -4,6 +4,19 @@
 > 근거 자료: `additional_info.md` (VR 심층 분석, V3.0 명세, LOC 자동화 가이드, 126~180주차 성과 보고서)  
 > 전제: 현재 구현(V2.2, 9종목 × 7구간) 위에 추가로 쌓는 방식
 
+> **2026-07-25 갱신** — 아래 1-A(V3.0)는 이미 구현 완료. 이후 라오어님이 공개한 최신 버전인
+> **무한매수법 V4.0(일반모드/리버스모드)**, **VR 5.0(오피셜 공식)**도 추가 구현했다.
+> 근거 자료는 이 문서 작성 시점엔 없었던 quantstack.app의 아래 페이지들:
+> - https://quantstack.app/infinite/v4-0-normal/ , https://quantstack.app/infinite/v4-0-reverse/
+> - https://quantstack.app/vr/ , https://quantstack.app/vr/overview/ , https://quantstack.app/vr/procedure/ ,
+>   https://quantstack.app/vr/installment/ , https://quantstack.app/vr/lumpsum/ , https://quantstack.app/vr/withdrawal/ ,
+>   https://quantstack.app/vr/convert/
+>
+> 구현 세부사항은 `works.md`의 "2026-07-25" 항목과 `src/lastofus/strategy/infinite_v4.py` /
+> `src/lastofus/strategy/value_rebalancing_v5.py`의 모듈 docstring 참고.
+> (아래 1-B "밸류리밸런싱(VR) 구현" 절의 "공식의 정확한 형태는 미공개"라는 서술은 이제 사실이 아님 —
+> VR 5.0 공식은 quantstack.app에 공개되어 있고 `value_rebalancing_v5.py`가 이를 그대로 구현한다.)
+
 ---
 
 ## 0. 현재 구현 현황 (베이스라인)

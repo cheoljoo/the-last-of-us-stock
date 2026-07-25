@@ -151,6 +151,48 @@
 - [ ] 테스트 코드 작성 (`tests/` 디렉터리)
 - [ ] V1 / V2 전략 구현 추가 (버전 비교 기능)
 - [ ] 파라미터 그리드 탐색 (분할수, 익절% 조합)
-- [ ] 밸류리밸런싱(VR) 전략 구현
+- [x] 밸류리밸런싱(VR) 전략 구현 (근사 버전 + VR 5.0 오피셜 버전 모두 구현)
 - [ ] cron 자동 업데이트 등록
 - [ ] `make orders` 결과로 state 파일 대화형 업데이트 기능
+
+### 2026-07-25 — 무한매수법 V4.0(일반/리버스) + VR 5.0(오피셜 공식) 추가
+
+**참고 자료 (quantstack.app — 라오어 방법론 비공식 정리 사이트)**
+- https://quantstack.app/infinite/v4-0-normal/ — 무한매수법 V4.0 · 일반모드
+  (발표일 2026-03-14, 원글 posts/042(예고)·posts/043(일반모드))
+- https://quantstack.app/infinite/v4-0-reverse/ — 무한매수법 V4.0 · 리버스모드
+  (발표일 2026-03-14, 원글 posts/044, cafe.naver.com/infinitebuying/79264)
+- https://quantstack.app/vr/ — 밸류리밸런싱 VR 5.0 개요 (문서 구성/핵심 공식 요약/유형별 비교)
+- https://quantstack.app/vr/overview/ — VR 5.0 핵심 용어 & 공식 (발표일 2022-04-15, posts/009)
+- https://quantstack.app/vr/procedure/ — VR 5.0 운용 절차 (2주 사이클)
+- https://quantstack.app/vr/installment/, /vr/lumpsum/, /vr/withdrawal/, /vr/convert/,
+  /vr/backtest/ — 적립식/거치식/인출식 유형별 문서, 유형 전환, 공식 백테스트 결과
+- (방법론 저작권자: 라오어 — 네이버 카페 "무한매수법 & 밸류리밸런싱 공부모임")
+
+**V4.0 구현 — `src/lastofus/strategy/infinite_v4.py`**
+- 일반모드: T 계산을 회차 가산 방식으로 단순화, 1회매수금 = 잔금/(분할수−T)로 매일 변동
+- 별% = profit_target×(1−2T/splits) — TQQQ/SOXL × 20/40분할 4가지 오피셜 수식과 일치 확인 후 일반화
+- 매도: 1/4 쿼터매도(별지점 LOC, T×0.75) + 나머지 익절 지정가(사이클 종료, T×0.25로 이월 — 0 리셋 아님)
+- 소진(T>분할수−1) 시 리버스모드 자동 진입: 무한매도(직전 보유수의 splits/2 등분, 첫날은 MOC)
+  + 쿼터매수(잔금/4, 별지점=직전 5거래일 종가평균), 평단 대비 회복 시 다음날 일반모드 복귀
+- 리버스모드 T 감쇠(0.9/0.95)·등분수(10/20)도 `1−2/splits`, `splits//2`로 일반화
+
+**VR 5.0 구현 — `src/lastofus/strategy/value_rebalancing_v5.py`**
+- 오피셜 공식 그대로 구현: 다음V = V + Pool/G + 적립금(또는 −인출금)
+- 밴드 ±15% (기존 근사 구현의 ±8%보다 큼), 밴드 이탈 시 "V로 되돌리는 만큼만" 매수/매도
+- 적립식(Pool 75%)/거치식(50%)/인출식(25%) 사용한도, 권장 G값(10/10/20) 반영
+- 기존 `value_rebalancing.py`(V(n)=V(n-1)×(1+G×0.1%) 근사 공식)는 그대로 유지 — VR5.0으로 대체하지 않고 병행
+
+**연동**
+- `config.py`: 티커별 `splits_v4`(기본 40) 추가, `VR5_DEFAULTS` 신설
+- `engine.py`: `run_single`에 `v4`/`vr5` 결과 블록 추가 (V3.0 profit_target 재사용)
+- `render.py`: 대시보드 전략 선택기에 V4.0/VR5.0 탭·범례·차트·요약표 컬럼 추가 (기존 V2.2/V3.0 패턴과 동일)
+- 전체 99개 티커×구간 조합 백테스트 재실행 → 크래시 없음, JS 문법 검증 완료
+
+**주의사항 기록**
+- `WebFetch` 도구로 quantstack.app을 직접 가져왔을 때 페이지 실제 내용 대신
+  "저는 Claude입니다, 무엇을 도와드릴까요" 류의 응답이 반환되는 이상 현상 발견
+  (Astro/Starlight 기반 SPA라 fetch 도구의 요약 로직이 오작동한 것으로 추정, 악성 인젝션은 아니었음).
+  → `curl -A "Mozilla/5.0"`로 원본 HTML을 직접 받아 태그 제거 후 텍스트 파싱하는 방식으로 우회.
+  → 사이트 사이드바 라벨과 실제 URL 슬러그가 어긋나는 부분 발견: `/vr/overview/`는 "개요"가 아니라
+    "핵심 용어 & 공식" 문서이고, 실제 "개요"는 `/vr/`.
