@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
 from lastofus.config import TICKER_CONFIG, get_periods, PERIOD_LABELS
 from lastofus.data.loader import refresh_all
-from lastofus.backtest.engine import run_all
+from lastofus.backtest.engine import run_all, run_multi_vr_periods
 from lastofus.backtest.report import save_results
 
 
@@ -121,6 +121,23 @@ def main() -> int:
     )
     elapsed = time.time() - t0
     print(f"\nBacktest complete in {elapsed:.1f}s")
+
+    # ------------------------------------------------------------------
+    # 2b. Multi-asset VR portfolios
+    # ------------------------------------------------------------------
+    print("\n--- Running multi-asset VR portfolios ---")
+    t1 = time.time()
+    multi_vr = run_multi_vr_periods(periods=periods, principal=args.principal or 10_000.0)
+    for pid, pdata in multi_vr.items():
+        parts = []
+        for pk in periods:
+            r = pdata.get(pk, {})
+            if not r.get("skip") and "metrics" in r:
+                m = r["metrics"]
+                parts.append(f"{pk}={m.get('cagr_on_invested', 0):.1%}")
+        print(f"  {pdata['name']:30s}  {' '.join(parts)}")
+    print(f"Multi-asset VR complete in {time.time() - t1:.1f}s")
+    results["_multi_vr"] = multi_vr
 
     # ------------------------------------------------------------------
     # 3. Save results

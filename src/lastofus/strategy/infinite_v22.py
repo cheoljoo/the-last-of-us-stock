@@ -1,9 +1,10 @@
 """라오어 무한매수법 V2.2 strategy implementation.
 
-Three entry points:
-- run_strategy(df, account, profit_target) → (trades, equity_series)
-- run_bah(df, principal)                   → (trades, equity_series)
-- run_dca(df, principal, splits)           → (trades, equity_series)
+Entry points:
+- run_strategy(df, account, profit_target)  → (trades, equity_series)
+- run_bah(df, principal)                    → (trades, equity_series)
+- run_dca(df, principal, splits)            → (trades, equity_series)
+- run_monthly_dca(df, principal)            → (trades, equity_series, total_invested)
 """
 from __future__ import annotations
 
@@ -198,7 +199,7 @@ def run_bah(
 
 
 # ---------------------------------------------------------------------------
-# DCA benchmark
+# DCA benchmark (기존: 초반 N일 균등 투자)
 # ---------------------------------------------------------------------------
 
 def run_dca(
@@ -241,3 +242,68 @@ def run_dca(
         equity_list.append(cash + shares * close_p)
 
     return trades, equity_list
+
+
+# ---------------------------------------------------------------------------
+# Monthly DCA benchmark (적립식 — 매월 초 균등 투자)
+# ---------------------------------------------------------------------------
+
+def run_monthly_dca(
+    df: pd.DataFrame,
+    principal: float,
+) -> tuple[list[dict[str, Any]], list[float], float]:
+    """매월 첫 거래일에 균등 금액을 적립 투자.
+
+    전체 원금(principal)을 총 월 수로 나눠 매월 초에 전량 매수.
+    BaH / DCA와 동일 총 원금으로 공정 비교.
+
+    Returns
+    -------
+    (trades, equity_series, total_invested)
+    """
+    if df.empty:
+        return [], [], 0.0
+
+    first_of_months: set = set()
+    seen_ym: set = set()
+    for dt in df.index:
+        ym = (dt.year, dt.month)
+        if ym not in seen_ym:
+            seen_ym.add(ym)
+            first_of_months.add(dt)
+
+    n_months = len(first_of_months)
+    if n_months == 0:
+        return [], [], 0.0
+
+    monthly = principal / n_months
+
+    shares = 0.0
+    cash = 0.0
+    total_invested = 0.0
+    trades: list[dict[str, Any]] = []
+    equity_list: list[float] = []
+
+    for dt, row in df.iterrows():
+        close_p = float(row["Close"])
+        if pd.isna(close_p) or close_p <= 0:
+            equity_list.append(cash + shares * 0)
+            continue
+
+        if dt in first_of_months:
+            cash += monthly
+            total_invested += monthly
+            qty = cash / close_p
+            shares += qty
+            cash = 0.0
+            trades.append({
+                "date":  str(dt.date()) if hasattr(dt, "date") else str(dt),
+                "type":  "MONTHLY_DCA",
+                "price": close_p,
+                "qty":   qty,
+                "spent": monthly,
+            })
+
+        equity_list.append(cash + shares * close_p)
+
+    return trades, equity_list, total_invested

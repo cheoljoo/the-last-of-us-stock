@@ -22,6 +22,12 @@ daily: fetch backtest dashboard
 orders:
 	$(PYTHON) scripts/daily_orders.py
 
+sweep:
+	$(PYTHON) scripts/run_sweep.py --tickers TQQQ SOXL 122630.KS
+
+portfolio:
+	$(PYTHON) scripts/run_portfolio_sim.py --ticker TQQQ --period 5yr
+
 publish:
 	bash scripts/publish.sh
 

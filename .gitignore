@@ -3,6 +3,8 @@
 data/cache/*.parquet
 reports/html/index.html
 reports/data/results.json
+reports/data/sweep_results.json
+reports/data/portfolio_results.json
 
 # 실제 거래 상태 파일 (개인 투자 정보 — 절대 커밋 금지)
 state/*.json
